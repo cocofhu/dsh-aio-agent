@@ -149,3 +149,48 @@ test('a failed commit abandons the live attempt and still closes the step', () =
   assert.deepEqual(frames.at(-1).frame.outcome, { kind: 'abandoned' })
   assert.deepEqual(session.events.map((e) => e.type), ['step/start', 'step/end'])
 })
+
+function pacedWriter() {
+  const session = fakeSession()
+  const frames = []
+  const live = { emit: (frame) => frames.push(frame), nextRevision: () => frames.length + 1, nextAttemptId: () => 'a-1' }
+  const writer = new TurnWriter({ session, turn: 1, provider: 'aio-test', model: 'default', pace: true, live })
+  const deltas = () => frames.filter((f) => f.chunk?.type === 'text-delta').map((f) => f.chunk.text)
+  return { session, writer, frames, deltas }
+}
+
+test('paced text arriving as one whole message streams out over several ticks', async () => {
+  const { session, writer, deltas } = pacedWriter()
+  const text = '长江是中国第一长河，'.repeat(12)
+  writer.update({ sessionUpdate: 'agent_message_chunk', content: { type: 'text', text } })
+  assert.equal(deltas().length, 1)
+  assert.ok(deltas()[0].length < text.length / 5)
+  await writer.drain()
+  assert.ok(deltas().length > 10)
+  assert.equal(deltas().join(''), text)
+  writer.finish()
+  assert.equal(session.events.find((e) => e.type === 'assistant/message').data.message.content[0].text, text)
+})
+
+test('updates queued behind paced text keep their order', async () => {
+  const { session, writer } = pacedWriter()
+  writer.update({ sessionUpdate: 'agent_message_chunk', content: { type: 'text', text: 'before the tool runs' } })
+  writer.update({ sessionUpdate: 'tool_call', toolCallId: 't1', kind: 'execute', rawInput: { command: 'ls' }, status: 'in_progress' })
+  writer.update({ sessionUpdate: 'tool_call_update', toolCallId: 't1', status: 'completed', rawOutput: { stdout: 'a', exitCode: 0 } })
+  writer.update({ sessionUpdate: 'agent_message_chunk', content: { type: 'text', text: 'after' } })
+  assert.equal(session.events.filter((e) => e.type === 'tool/call').length, 0)
+  await writer.drain()
+  writer.finish()
+  const messages = session.events.filter((e) => e.type === 'assistant/message').map((e) => e.data.message.content.map((b) => b.text ?? b.name))
+  assert.deepEqual(messages, [['before the tool runs', 'bash'], ['after']])
+})
+
+test('finishing without draining releases paced text at once, whole code points intact', () => {
+  const { session, writer, deltas } = pacedWriter()
+  const text = '😀'.repeat(40)
+  writer.update({ sessionUpdate: 'agent_message_chunk', content: { type: 'text', text } })
+  writer.finish()
+  assert.equal(deltas().join(''), text)
+  assert.ok(deltas().every((d) => !/[\uD800-\uDBFF]$/.test(d)))
+  assert.equal(session.events.find((e) => e.type === 'assistant/message').data.message.content[0].text, text)
+})
