@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 globalThis.window = { __ModuleLoader__: { load: (definition) => { globalThis.loaded = definition } } }
 await import('../lib/client.js')
-const { labelCss, modeView, presetCss, compactModels } = globalThis.loaded.factory(() => ({}))
+const { labelCss, modeView, presetCss, compactModels, setupText } = globalThis.loaded.factory(() => ({}))
 const css = labelCss()
 const rules = css.split('\n').map((rule) => ({ selectors: rule.slice(0, rule.indexOf('{')).split(','), body: rule.slice(rule.indexOf('{')) }))
 
@@ -185,4 +185,22 @@ test('the Cursor menu lists the shortlist until the search box holds a query', a
   assert.equal(v.store.getSnapshot().groups[0].models.length, CURSOR.length)
   query = false
   assert.equal((await v.load()).groups[0].models.length, CURSOR.length, 'the /model popup searches every id')
+})
+
+test('the setup prompt names the agent, its install line and the patch entry for its absolute path', () => {
+  const agent = { id: 'cursor', label: 'Cursor', command: 'cursor-agent acp', install: 'curl https://cursor.com/install -fsS | bash', login: 'cursor-agent login' }
+  for (const lang of ['zh-CN', 'en']) {
+    globalThis.document = { documentElement: { lang } }
+    const { note, action, prompt } = setupText(agent)
+    assert.match(note, /Cursor/)
+    assert.ok(action)
+    assert.ok(prompt.includes('command -v cursor-agent'))
+    assert.ok(prompt.includes('curl https://cursor.com/install -fsS | bash'))
+    assert.ok(prompt.includes('cursor-agent login'))
+    assert.ok(prompt.includes('- id: aio-cursor\n  name: "@cocofhu/dsh-aio-agent/cursor"\n  config:\n    command: "<absolute path to cursor-agent> acp"'))
+    assert.ok(prompt.includes('${DSH_HOME:-~/.dsh}/profiles/<profile>/cordis.patch.yml'))
+  }
+  globalThis.document = { documentElement: { lang: 'en' } }
+  assert.ok(setupText({ ...agent, id: 'claude-code', label: 'Claude Code', command: 'claude-agent-acp' }).prompt.includes('command: "<absolute path to claude-agent-acp>"'))
+  delete globalThis.document
 })
