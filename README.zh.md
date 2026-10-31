@@ -4,6 +4,10 @@
 
 在 DeepSeek Harness（DSH）里用 Cursor、Claude Code、Codex、OpenCode、CodeBuddy 或 Kimi Code 运行会话。每个 Agent 作为一个模式出现在模式菜单中，它的模型出现在原生模型菜单中。这类会话的每一轮都交给 DSH 所在机器上的 Agent CLI 执行，经由 [Agent Client Protocol](https://agentclientprotocol.com)（ACP），Cursor 和 CodeBuddy 则用 CLI 的 JSON 流模式（可报告 token 用量）；DSH 只负责展示对话和记录会话日志，不会调用自己的模型。
 
+<a href="docs/promo.mp4"><img src="docs/promo.webp" alt="在 DSH 模式菜单中切换到 Cursor、搜索模型、实时对话、查看轨迹和 Token 用量" width="100%"></a>
+
+[观看 1080p 视频](docs/promo.mp4)
+
 ## 安装
 
 打开 **插件 → 添加插件**，输入 `github:cocofhu/dsh-aio-agent`，点击 **安装**，再点 **立即启用**。也可以在终端执行：

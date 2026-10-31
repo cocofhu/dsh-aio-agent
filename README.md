@@ -4,6 +4,10 @@ English | [中文](README.zh.md)
 
 Run sessions in Cursor, Claude Code, Codex, OpenCode, CodeBuddy or Kimi Code from inside DeepSeek Harness (DSH). Each agent appears as a mode in the mode menu, and its models appear in the native model selector. Every turn of such a session runs in the agent CLI on the DSH machine, over the [Agent Client Protocol](https://agentclientprotocol.com) (ACP) or, for Cursor and CodeBuddy, the CLI's JSON stream mode, which reports token usage. DSH only renders the conversation and keeps the session log; it never calls its own model for these sessions.
 
+<a href="docs/promo.mp4"><img src="docs/promo.webp" alt="Switching to Cursor in the DSH mode menu, searching its models, a live turn, the trajectory and token usage" width="100%"></a>
+
+[Watch in 1080p](docs/promo.mp4)
+
 ## Install
 
 Open **Plugins → Add plugin**, enter `github:cocofhu/dsh-aio-agent`, choose **Install**, then **Enable now**. From a terminal, the same install is:
