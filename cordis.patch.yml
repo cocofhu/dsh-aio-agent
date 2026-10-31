@@ -18,3 +18,7 @@
       name: '@cocofhu/dsh-aio-agent/codex'
     - id: aio-opencode
       name: '@cocofhu/dsh-aio-agent/opencode'
+    - id: aio-codebuddy
+      name: '@cocofhu/dsh-aio-agent/codebuddy'
+    - id: aio-kimi-code
+      name: '@cocofhu/dsh-aio-agent/kimi-code'

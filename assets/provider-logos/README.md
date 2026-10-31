@@ -4,7 +4,7 @@
 
 The brand marks are copied unmodified from [grasp](https://github.com/cocofhu/grasp) `web/src/assets/provider-logos`, which records the upstream of each file:
 
-- `claude.svg`, `cursor.svg`, `opencode.svg`, `deepseek.svg`, `openrouter.svg` and `moonshot.svg` come from [Simple Icons](https://github.com/simple-icons/simple-icons) v16.
+- `claude.svg`, `codebuddy.svg`, `cursor.svg`, `opencode.svg`, `deepseek.svg`, `openrouter.svg` and `moonshot.svg` come from [Simple Icons](https://github.com/simple-icons/simple-icons) v16.
 - `openai.svg` comes from the [OpenAI 2025 logo package](https://cdn.openai.com/brand/OpenAI-Logos-2025.zip). Codex uses the same mark.
 - `xai.svg` is the xAI mark from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:XAI-Logo.svg).
 - `kimi.svg` is the K-only mark from the [official Kimi brand guide](https://moonshotai.github.io/Branding-Guide/).

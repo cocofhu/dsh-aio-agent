@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Run sessions in Cursor, Claude Code, Codex or OpenCode from inside DeepSeek Harness (DSH). Each agent appears as a mode in the mode menu, and its models appear in the native model selector. Every turn of such a session runs in the agent CLI on the DSH machine over the [Agent Client Protocol](https://agentclientprotocol.com) (ACP). DSH only renders the conversation and keeps the session log; it never calls its own model for these sessions.
+Run sessions in Cursor, Claude Code, Codex, OpenCode, CodeBuddy or Kimi Code from inside DeepSeek Harness (DSH). Each agent appears as a mode in the mode menu, and its models appear in the native model selector. Every turn of such a session runs in the agent CLI on the DSH machine, over the [Agent Client Protocol](https://agentclientprotocol.com) (ACP) or, for Cursor and CodeBuddy, the CLI's JSON stream mode, which reports token usage. DSH only renders the conversation and keeps the session log; it never calls its own model for these sessions.
 
 ## Install
 
@@ -19,15 +19,17 @@ Then install and sign in to the agents you want, on the machine that runs DSH:
 | Agent | Install | Sign in |
 | --- | --- | --- |
 | Cursor | `curl https://cursor.com/install -fsS \| bash` | `cursor-agent login` |
-| Claude Code | `npm install -g @anthropic-ai/claude-code @zed-industries/claude-code-acp` | `claude auth login` |
+| Claude Code | `npm install -g @anthropic-ai/claude-code @agentclientprotocol/claude-agent-acp` | `claude auth login` |
 | Codex | `npm install -g @openai/codex @zed-industries/codex-acp` | `codex login` |
 | OpenCode | `npm install -g opencode-ai` | `opencode auth login` |
+| CodeBuddy | `npm install -g @tencent-ai/codebuddy-code` | run `codebuddy`, then `/login`; models in `~/.codebuddy/models.json` need no sign-in |
+| Kimi Code | `curl -fsSL https://code.kimi.com/kimi-code/install.sh \| bash` | `kimi acp --login` |
 
 An agent that is not installed or not signed in stays out of the model selector instead of showing an error. Its settings page shows the steps above with copy buttons.
 
 ## Use
 
-1. Pick **Cursor**, **Claude Code**, **Codex** or **OpenCode** from the mode menu of a new session.
+1. Pick **Cursor**, **Claude Code**, **Codex**, **OpenCode**, **CodeBuddy** or **Kimi Code** from the mode menu of a new session.
 2. Choose one of that agent's models in the model selector, or keep its default.
 3. Send messages as usual. Replies stream in as the agent writes them. Stop, queueing and the transcript work as in any session; tool calls show up as native shell, read, write and edit steps.
 

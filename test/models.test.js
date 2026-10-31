@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { backendOfProvider, providerId, readModelState, setModel } from '../lib/models.js'
+import { backendOfProvider, promptUsage, providerId, readModelState, setModel } from '../lib/models.js'
+
+test('ACP prompt usage maps to DSH token usage (OpenCode shape)', () => {
+  const result = { stopReason: 'end_turn', usage: { inputTokens: 20, outputTokens: 2, totalTokens: 7318, cachedReadTokens: 7296 } }
+  assert.deepEqual(promptUsage(result), { inputTokens: 20, outputTokens: 2, totalTokens: 7318, cacheReadTokens: 7296 })
+  assert.equal(promptUsage({ stopReason: 'end_turn' }), undefined)
+})
 
 test('reads the ACP models field (Cursor, Claude Code)', () => {
   const state = readModelState({
@@ -38,4 +44,13 @@ test('maps provider routes to backends', () => {
   assert.equal(providerId('claude-code'), 'aio-claude-code')
   assert.equal(backendOfProvider('aio-claude-code'), 'claude-code')
   assert.equal(backendOfProvider('deepseek'), undefined)
+})
+
+test('the model a turn runs without a pick is listed first', async () => {
+  const { defaultFirst } = await import('../lib/catalog.js')
+  const models = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
+  assert.deepEqual(defaultFirst({ models, current: 'b' }).map((m) => m.id), ['b', 'a', 'c'])
+  assert.deepEqual(defaultFirst({ models, current: 'b' }, 'c').map((m) => m.id), ['c', 'a', 'b'])
+  assert.deepEqual(defaultFirst({ models, current: 'b' }, 'missing').map((m) => m.id), ['b', 'a', 'c'])
+  assert.deepEqual(defaultFirst({ models }).map((m) => m.id), ['a', 'b', 'c'])
 })

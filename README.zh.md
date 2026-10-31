@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-在 DeepSeek Harness（DSH）里用 Cursor、Claude Code、Codex 或 OpenCode 运行会话。每个 Agent 作为一个模式出现在模式菜单中，它的模型出现在原生模型菜单中。这类会话的每一轮都通过 [Agent Client Protocol](https://agentclientprotocol.com)（ACP）交给 DSH 所在机器上的 Agent CLI 执行；DSH 只负责展示对话和记录会话日志，不会调用自己的模型。
+在 DeepSeek Harness（DSH）里用 Cursor、Claude Code、Codex、OpenCode、CodeBuddy 或 Kimi Code 运行会话。每个 Agent 作为一个模式出现在模式菜单中，它的模型出现在原生模型菜单中。这类会话的每一轮都交给 DSH 所在机器上的 Agent CLI 执行，经由 [Agent Client Protocol](https://agentclientprotocol.com)（ACP），Cursor 和 CodeBuddy 则用 CLI 的 JSON 流模式（可报告 token 用量）；DSH 只负责展示对话和记录会话日志，不会调用自己的模型。
 
 ## 安装
 
@@ -19,15 +19,17 @@ dsh plugin add github:cocofhu/dsh-aio-agent
 | Agent | 安装 | 登录 |
 | --- | --- | --- |
 | Cursor | `curl https://cursor.com/install -fsS \| bash` | `cursor-agent login` |
-| Claude Code | `npm install -g @anthropic-ai/claude-code @zed-industries/claude-code-acp` | `claude auth login` |
+| Claude Code | `npm install -g @anthropic-ai/claude-code @agentclientprotocol/claude-agent-acp` | `claude auth login` |
 | Codex | `npm install -g @openai/codex @zed-industries/codex-acp` | `codex login` |
 | OpenCode | `npm install -g opencode-ai` | `opencode auth login` |
+| CodeBuddy | `npm install -g @tencent-ai/codebuddy-code` | 运行 `codebuddy` 后执行 `/login`；`~/.codebuddy/models.json` 中的模型无需登录 |
+| Kimi Code | `curl -fsSL https://code.kimi.com/kimi-code/install.sh \| bash` | `kimi acp --login` |
 
 未安装或未登录的 Agent 不会出现在模型菜单里，也不会报错；它的配置页会列出上面的步骤，并提供复制按钮。
 
 ## 使用
 
-1. 新建会话时，在模式菜单中选择 **Cursor**、**Claude Code**、**Codex** 或 **OpenCode**。
+1. 新建会话时，在模式菜单中选择 **Cursor**、**Claude Code**、**Codex**、**OpenCode**、**CodeBuddy** 或 **Kimi Code**。
 2. 在模型菜单中选择该 Agent 的模型，或保留默认值。
 3. 照常发送消息，回复会随 Agent 输出实时显示。停止、排队和对话记录与普通会话一致；工具调用显示为原生的终端、读取、写入和编辑步骤。
 

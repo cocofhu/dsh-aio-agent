@@ -1,7 +1,7 @@
 {
   "name": "@cocofhu/dsh-aio-agent",
   "version": "0.0.1",
-  "description": "DeepSeek Harness 插件：在 DSH 里直接与 Cursor、Claude Code、Codex、OpenCode 等编码 Agent 对话，DSH 负责展示与审计",
+  "description": "DeepSeek Harness 插件：在 DSH 里直接与 Cursor、Claude Code、Codex、OpenCode、CodeBuddy、Kimi Code 等编码 Agent 对话，DSH 负责展示与审计",
   "homepage": "https://github.com/cocofhu/dsh-aio-agent#readme",
   "repository": {
     "type": "git",
@@ -26,6 +26,12 @@
     "./opencode": "./lib/agents/opencode.js",
     "./opencode/locale/*.json": "./locale/agents/opencode/*.json",
     "./opencode/icon": "./assets/provider-logos/opencode.svg",
+    "./codebuddy": "./lib/agents/codebuddy.js",
+    "./codebuddy/locale/*.json": "./locale/agents/codebuddy/*.json",
+    "./codebuddy/icon": "./assets/provider-logos/codebuddy.svg",
+    "./kimi-code": "./lib/agents/kimi-code.js",
+    "./kimi-code/locale/*.json": "./locale/agents/kimi-code/*.json",
+    "./kimi-code/icon": "./assets/provider-logos/kimi.svg",
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
