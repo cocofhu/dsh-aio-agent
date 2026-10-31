@@ -55,8 +55,6 @@ Every ACP frame in both directions is recorded in the session log as `plugin:dsh
 - A tool call shows up once it has finished, because ACP agents send its final arguments only then; text and reasoning stream as they arrive.
 - The composer's access mode does not restrict the external agent.
 - The status cannot tell an agent that is not installed from one that is not signed in.
-- Mode names and descriptions in the mode menu are English only.
-
 ## Develop
 
 ```sh
