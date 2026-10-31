@@ -22,7 +22,7 @@ dsh plugin add github:cocofhu/dsh-aio-agent
 | --- | --- | --- |
 | Cursor | `curl https://cursor.com/install -fsS \| bash` | `cursor-agent login` |
 | Claude Code | `npm install -g @anthropic-ai/claude-code @agentclientprotocol/claude-agent-acp` | `claude auth login` |
-| Codex | `npm install -g @openai/codex @zed-industries/codex-acp` | `codex login` |
+| Codex | `npm install -g @openai/codex @agentclientprotocol/codex-acp` | `codex login` |
 | OpenCode | `npm install -g opencode-ai` | `opencode auth login` |
 | CodeBuddy | `npm install -g @tencent-ai/codebuddy-code` | 运行 `codebuddy` 后执行 `/login`；`~/.codebuddy/models.json` 中的模型无需登录 |
 | Kimi Code | `curl -fsSL https://code.kimi.com/kimi-code/install.sh \| bash` | `kimi acp --login` |

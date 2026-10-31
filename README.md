@@ -22,7 +22,7 @@ Then install and sign in to the agents you want, on the machine that runs DSH:
 | --- | --- | --- |
 | Cursor | `curl https://cursor.com/install -fsS \| bash` | `cursor-agent login` |
 | Claude Code | `npm install -g @anthropic-ai/claude-code @agentclientprotocol/claude-agent-acp` | `claude auth login` |
-| Codex | `npm install -g @openai/codex @zed-industries/codex-acp` | `codex login` |
+| Codex | `npm install -g @openai/codex @agentclientprotocol/codex-acp` | `codex login` |
 | OpenCode | `npm install -g opencode-ai` | `opencode auth login` |
 | CodeBuddy | `npm install -g @tencent-ai/codebuddy-code` | run `codebuddy`, then `/login`; models in `~/.codebuddy/models.json` need no sign-in |
 | Kimi Code | `curl -fsSL https://code.kimi.com/kimi-code/install.sh \| bash` | `kimi acp --login` |
