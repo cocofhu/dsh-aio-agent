@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "AIO Agent",
-    "description": "Chat with Cursor, Claude Code, Codex and OpenCode inside DSH. This row marks every model in the model selector with its brand."
+    "description": "Chat with Cursor, Claude Code, Codex, OpenCode, CodeBuddy and Kimi Code inside DSH, which shows and records the sessions. This row marks every model in the model selector with its brand."
   }
 }

@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 globalThis.window = { __ModuleLoader__: { load: (definition) => { globalThis.loaded = definition } } }
 await import('../lib/client.js')
-const { labelCss, modeView, presetCss, compactModels, setupText } = globalThis.loaded.factory(() => ({}))
+const { labelCss, modeView, presetCss, compactModels, setupText, hostText } = globalThis.loaded.factory(() => ({}))
 const css = labelCss()
 const rules = css.split('\n').map((rule) => ({ selectors: rule.slice(0, rule.indexOf('{')).split(','), body: rule.slice(rule.indexOf('{')) }))
 
@@ -203,4 +203,26 @@ test('the setup prompt names the agent, its install line and the patch entry for
   globalThis.document = { documentElement: { lang: 'en' } }
   assert.ok(setupText({ ...agent, id: 'claude-code', label: 'Claude Code', command: 'claude-agent-acp' }).prompt.includes('command: "<absolute path to claude-agent-acp>"'))
   delete globalThis.document
+})
+
+test('host preset descriptions and turn errors read in Chinese and keep English as is', async () => {
+  const { BACKENDS } = await import('../lib/backends.js')
+  for (const backend of Object.values(BACKENDS)) {
+    assert.equal(hostText(backend.description, false)?.text, backend.description)
+    assert.match(hostText(backend.description, true).text, new RegExp(`^把每一轮对话交给本机的 ${backend.label}( \\w+)?，`))
+  }
+  const missing = hostText('Kimi Code could not start: command not found: /nonexistent/kimi (install it and make sure it is on PATH for the DSH process)', true)
+  assert.equal(missing.text, 'Kimi Code 无法启动：找不到命令 /nonexistent/kimi。请先安装，并确保它在 DSH 服务进程的 PATH 中。')
+  assert.equal(missing.agent.id, 'kimi-code')
+  const legacy = hostText('command not found: /nonexistent/kimi (install it and make sure it is on PATH for the DSH process)', true)
+  assert.equal(legacy.text, '无法启动：找不到命令 /nonexistent/kimi。请先安装，并确保它在 DSH 服务进程的 PATH 中。')
+  assert.equal(legacy.agent, undefined)
+  const signedOut = hostText('Codex is not signed in: run `codex login` in a terminal on the DSH machine, then send again', true)
+  assert.match(signedOut.text, /^Codex 尚未登录：.*`codex login`/)
+  assert.equal(signedOut.agent.id, 'codex')
+  const mismatch = hostText('this session runs Cursor, but the selected model belongs to Codex; pick a Cursor model or start a Codex session', true)
+  assert.equal(mismatch.text, '当前会话运行的是 Cursor，但所选模型属于 Codex；请选择 Cursor 的模型，或新建一个 Codex 会话。')
+  assert.equal(mismatch.agent, undefined)
+  assert.match(hostText('OpenCode models run only in the OpenCode agent preset; choose it from the mode menu or pick another model', true).text, /^OpenCode 的模型只能在 OpenCode 模式下使用/)
+  assert.equal(hostText('something else', true), undefined)
 })
