@@ -1,0 +1,8 @@
+{"type":"thread.started","thread_id":"01a1940a-5215-7842-bf1b-463f7060307a"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"item_0","type":"command_execution","command":"/bin/bash -lc 'cat notes.txt'","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_0","type":"command_execution","command":"/bin/bash -lc 'cat notes.txt'","aggregated_output":"hello\n","exit_code":0,"status":"completed"}}
+{"type":"item.started","item":{"id":"item_1","type":"file_change","changes":[{"path":"/tmp/cxf/out.txt","kind":"add"}],"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_1","type":"file_change","changes":[{"path":"/tmp/cxf/out.txt","kind":"add"}],"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":"finished"}}
+{"type":"turn.completed","usage":{"input_tokens":43155,"cached_input_tokens":36352,"cache_write_input_tokens":0,"output_tokens":114,"reasoning_output_tokens":25}}

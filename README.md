@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Run sessions in Cursor, Claude Code, Codex, OpenCode, CodeBuddy or Kimi Code from inside DeepSeek Harness (DSH). Each agent appears as a mode in the mode menu, and its models appear in the native model selector. Every turn of such a session runs in the agent CLI on the DSH machine, over the [Agent Client Protocol](https://agentclientprotocol.com) (ACP) or, for Cursor and CodeBuddy, the CLI's JSON stream mode, which reports token usage. DSH only renders the conversation and keeps the session log; it never calls its own model for these sessions.
+Run sessions in Cursor, Claude Code, Codex, OpenCode, CodeBuddy or Kimi Code from inside DeepSeek Harness (DSH). Each agent appears as a mode in the mode menu, and its models appear in the native model selector. Every turn of such a session runs in the agent CLI on the DSH machine. Cursor, Claude Code, Codex, OpenCode and CodeBuddy run one process per turn in their JSON stream mode (`cursor-agent --print`, `claude -p`, `codex exec --json`, `opencode run --format json`, `codebuddy --print`), which reports token usage and resumes the CLI's own session by id; Kimi Code runs over the [Agent Client Protocol](https://agentclientprotocol.com) (ACP). DSH only renders the conversation and keeps the session log; it never calls its own model for these sessions.
 
 <a href="docs/promo.mp4"><img src="docs/promo.webp" alt="Switching to Cursor in the DSH mode menu, searching its models, a live turn, the trajectory and token usage" width="100%"></a>
 
@@ -21,8 +21,8 @@ Then install and sign in to the agents you want, on the machine that runs DSH:
 | Agent | Install | Sign in |
 | --- | --- | --- |
 | Cursor | `curl https://cursor.com/install -fsS \| bash` | `cursor-agent login` |
-| Claude Code | `npm install -g @anthropic-ai/claude-code @agentclientprotocol/claude-agent-acp` | `claude auth login` |
-| Codex | `npm install -g @openai/codex @agentclientprotocol/codex-acp` | `codex login` |
+| Claude Code | `npm install -g @anthropic-ai/claude-code` | `claude auth login` |
+| Codex | `npm install -g @openai/codex` | `codex login` |
 | OpenCode | `npm install -g opencode-ai` | `opencode auth login` |
 | CodeBuddy | `npm install -g @tencent-ai/codebuddy-code` | run `codebuddy`, then `/login`; models in `~/.codebuddy/models.json` need no sign-in |
 | Kimi Code | `curl -fsSL https://code.kimi.com/kimi-code/install.sh \| bash` | `kimi acp --login` |
@@ -32,10 +32,10 @@ An agent that is not installed or not signed in stays out of the model selector 
 ## Use
 
 1. Pick **Cursor**, **Claude Code**, **Codex**, **OpenCode**, **CodeBuddy** or **Kimi Code** from the mode menu of a new session.
-2. Choose one of that agent's models in the model selector, or keep its default.
+2. Choose one of that agent's models in the model selector, or keep its default. Where the agent offers reasoning levels (Codex, OpenCode variants, Kimi Code thinking), pick one under **Reasoning effort**; Codex lists the models and levels of its own picker (`~/.codex/models_cache.json`).
 3. Send messages as usual. Replies stream in as the agent writes them. Stop, queueing and the transcript work as in any session; tool calls show up as native shell, read, write and edit steps.
 
-The CLI keeps its own conversation context. DSH resumes it after a restart when the agent supports `session/load`.
+The CLI keeps its own conversation context: each turn resumes the CLI session the first turn started, also after a DSH restart.
 
 ## Configure
 
@@ -43,18 +43,19 @@ The CLI keeps its own conversation context. DSH resumes it after a restart when 
 
 - **Status**: ready with its model count, or the install and sign-in steps when DSH cannot start it. **Check again** re-reads it.
 - **Default model**: used until a session picks a model.
-- **Launch command**: replaces the built-in command, e.g. `"/opt/Cursor Agent/cursor-agent" acp`. Quote paths that contain spaces.
+- **Launch command**: replaces the built-in executable, e.g. `"/opt/Cursor Agent/cursor-agent"` or `/opt/codex --profile work`; options after it are kept. Quote paths that contain spaces.
 - **Approve permission requests**: answers the requests the agent sends before acting, such as running a command. On approves, off declines. Actions the agent takes without asking follow its own settings.
 
 Saved values go to the profile's `cordis.patch.yml` and apply from the next turn, without a reload.
 
 ## Session log
 
-Every ACP frame in both directions is recorded in the session log as `plugin:dsh-aio-agent/acp`, with secrets redacted. Permission answers are recorded as `plugin:dsh-aio-agent/permission`, and the binding between a DSH session and its CLI session as `plugin:dsh-aio-agent/binding`.
+Every line of a JSON stream is recorded in the session log as `plugin:dsh-aio-agent/stream`, and every ACP frame in both directions as `plugin:dsh-aio-agent/acp`, with secrets redacted. Permission answers are recorded as `plugin:dsh-aio-agent/permission`, and the binding between a DSH session and its CLI session as `plugin:dsh-aio-agent/binding`.
 
 ## Known limitations
 
-- A tool call shows up once it has finished, because ACP agents send its final arguments only then; text and reasoning stream as they arrive.
+- Codex and OpenCode report each reply and tool call once it is complete, so their text arrives in whole messages rather than token by token.
+- A Claude Code, Codex or OpenCode session begun with an earlier version of this plugin, over ACP, continues in a new CLI session; its DSH transcript stays.
 - The composer's access mode does not restrict the external agent.
 - The status cannot tell an agent that is not installed from one that is not signed in.
 ## Develop

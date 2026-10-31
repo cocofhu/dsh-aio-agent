@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { backendOfProvider, promptUsage, providerId, readModelState, setModel } from '../lib/models.js'
+import { backendOfProvider, promptUsage, providerId, readEffortState, readModelState, setModel } from '../lib/models.js'
+
+test('the thought-level config option is the ACP effort selector (Kimi shape)', () => {
+  const result = {
+    configOptions: [
+      { type: 'select', id: 'model', category: 'model', currentValue: 'k3', options: [{ value: 'k3', name: 'Kimi K3' }] },
+      { type: 'select', id: 'thinking', category: 'thought_level', currentValue: 'high', options: [{ value: 'low', name: 'Low' }], groups: [{ options: [{ value: 'high' }] }] },
+    ],
+  }
+  assert.deepEqual(readEffortState(result), { configId: 'thinking', efforts: [{ id: 'low', name: 'Low' }, { id: 'high', name: 'high' }], current: 'high' })
+  assert.equal(readEffortState({ configOptions: [result.configOptions[0]] }), undefined)
+  assert.equal(readEffortState(undefined), undefined)
+})
 
 test('ACP prompt usage maps to DSH token usage (OpenCode shape)', () => {
   const result = { stopReason: 'end_turn', usage: { inputTokens: 20, outputTokens: 2, totalTokens: 7318, cachedReadTokens: 7296 } }
