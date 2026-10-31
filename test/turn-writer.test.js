@@ -136,6 +136,27 @@ test('a step after a running tool buffers until the tool settles, then streams i
   assert.deepEqual(session.events.map((e) => e.type), ['step/start', 'assistant/message', 'tool/call', 'tool/result', 'step/end', 'step/start', 'assistant/message', 'step/end'])
 })
 
+test('running tool calls commit while they run, together when one message carries them', async () => {
+  const { session, writer, frames } = liveWriter()
+  writer.update({ sessionUpdate: 'agent_message_chunk', content: { type: 'text', text: 'Checking.' } })
+  writer.update({ sessionUpdate: 'tool_call', toolCallId: 't1', kind: 'execute', rawInput: { command: 'ls' }, status: 'in_progress' })
+  writer.update({ sessionUpdate: 'tool_call', toolCallId: 't2', kind: 'execute', rawInput: { command: 'pwd' }, status: 'in_progress' })
+  assert.deepEqual(session.events.map((e) => e.type), ['step/start'])
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.deepEqual(session.events.map((e) => e.type), ['step/start', 'assistant/message', 'tool/call', 'tool/call'])
+  assert.equal(frames.filter((f) => f.frame.type === 'end').length, 1)
+  writer.update({ sessionUpdate: 'tool_call', toolCallId: 't3', kind: 'execute', rawInput: { command: 'id' }, status: 'in_progress' })
+  writer.update({ sessionUpdate: 'tool_call_update', toolCallId: 't1', status: 'completed', rawOutput: { exitCode: 0, stdout: 'a' } })
+  writer.update({ sessionUpdate: 'tool_call_update', toolCallId: 't2', status: 'completed', rawOutput: { exitCode: 0, stdout: '/' } })
+  assert.deepEqual(session.events.slice(4).map((e) => e.type), ['tool/result', 'tool/result', 'step/end', 'step/start'])
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.equal(session.events.at(-1).type, 'tool/call')
+  writer.update({ sessionUpdate: 'tool_call_update', toolCallId: 't3', status: 'completed', rawOutput: { exitCode: 0, stdout: 'root' } })
+  writer.update({ sessionUpdate: 'agent_message_chunk', content: { type: 'text', text: 'Done.' } })
+  writer.finish()
+  assert.deepEqual(session.events.slice(8).map((e) => e.type), ['assistant/message', 'tool/call', 'tool/result', 'step/end', 'step/start', 'assistant/message', 'step/end'])
+})
+
 test('a failed commit abandons the live attempt and still closes the step', () => {
   const session = fakeSession()
   const append = session.append
