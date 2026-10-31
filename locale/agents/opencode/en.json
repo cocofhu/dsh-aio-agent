@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "OpenCode",
+    "description": "Run sessions in OpenCode: adds the OpenCode mode and lists its models in the model selector. Open it to check sign-in status and set the default model, launch command and permissions."
+  }
+}

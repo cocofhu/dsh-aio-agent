@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Cursor",
+    "description": "Run sessions in Cursor Agent: adds the Cursor mode and lists its models in the model selector. Open it to check sign-in status and set the default model, launch command and permissions."
+  }
+}

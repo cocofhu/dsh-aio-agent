@@ -1,0 +1,20 @@
+# One row per external agent CLI, each switchable on its own on the Plugins page.
+# A row adds the agent preset, whose driver runs every turn of a session in that
+# CLI over ACP, and lists the CLI's models in the native model picker; an agent
+# that is not signed in or not installed lists no models. The package row mounts
+# the browser half: brand marks in the model picker and each agent's settings page.
+#
+# Agent rows take `command` (a launch line, e.g. `"/opt/Cursor Agent/cursor-agent" acp`),
+# `model` and `permission` (`allow` | `deny`); the settings page edits them and the
+# next CLI launch picks them up without a reload.
+- insert:
+    - id: aio-agent
+      name: '@cocofhu/dsh-aio-agent'
+    - id: aio-cursor
+      name: '@cocofhu/dsh-aio-agent/cursor'
+    - id: aio-claude-code
+      name: '@cocofhu/dsh-aio-agent/claude-code'
+    - id: aio-codex
+      name: '@cocofhu/dsh-aio-agent/codex'
+    - id: aio-opencode
+      name: '@cocofhu/dsh-aio-agent/opencode'

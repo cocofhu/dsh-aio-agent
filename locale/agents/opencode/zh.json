@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "OpenCode",
+    "description": "用 OpenCode 运行会话：添加 OpenCode 模式，并在模型菜单中列出它的模型。打开可查看登录状态，设置默认模型、启动命令和权限。"
+  }
+}

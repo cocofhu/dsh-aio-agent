@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Claude Code",
+    "description": "Run sessions in Claude Code: adds the Claude Code mode and lists its models in the model selector. Open it to check sign-in status and set the default model, launch command and permissions."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "AIO Agent",
+    "description": "在 DSH 里直接与 Cursor、Claude Code、Codex、OpenCode 对话，DSH 负责展示与审计。此行为模型菜单中的每个模型加上品牌图标。"
+  }
+}

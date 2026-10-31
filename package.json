@@ -1,0 +1,78 @@
+{
+  "name": "@cocofhu/dsh-aio-agent",
+  "version": "0.0.1",
+  "description": "DeepSeek Harness 插件：在 DSH 里直接与 Cursor、Claude Code、Codex、OpenCode 等编码 Agent 对话，DSH 负责展示与审计",
+  "homepage": "https://github.com/cocofhu/dsh-aio-agent#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cocofhu/dsh-aio-agent.git"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./driver": "./lib/driver.js",
+    "./locale/*.json": "./locale/*.json",
+    "./cursor": "./lib/agents/cursor.js",
+    "./cursor/locale/*.json": "./locale/agents/cursor/*.json",
+    "./cursor/icon": "./assets/provider-logos/cursor.svg",
+    "./claude-code": "./lib/agents/claude-code.js",
+    "./claude-code/locale/*.json": "./locale/agents/claude-code/*.json",
+    "./claude-code/icon": "./assets/provider-logos/claude.svg",
+    "./codex": "./lib/agents/codex.js",
+    "./codex/locale/*.json": "./locale/agents/codex/*.json",
+    "./codex/icon": "./assets/plugin-icons/codex.svg",
+    "./opencode": "./lib/agents/opencode.js",
+    "./opencode/locale/*.json": "./locale/agents/opencode/*.json",
+    "./opencode/icon": "./assets/provider-logos/opencode.svg",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "assets",
+    "locale",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md"
+  ],
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-model-selection",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-plugin-manager",
+        "@deepseek-ai/dsh-api-remotes"
+      ]
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "acp",
+    "agent"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-agent-preset": "*",
+    "@deepseek-ai/dsh-session": "*",
+    "@deepseek-ai/dsh-llm": "*",
+    "@deepseek-ai/schemastery": "*",
+    "@deepseek-ai/dsh-agent": "*"
+  },
+  "scripts": {
+    "test": "node --import ./test/dsh-runtime.mjs --test test/*.test.js",
+    "build:logos": "node scripts/build-client-logos.mjs"
+  },
+  "icon": "./assets/provider-logos/models.svg"
+}
