@@ -6,8 +6,6 @@
 
 <a href="docs/promo.mp4"><img src="docs/promo.webp" alt="在 DSH 模式菜单中切换到 Cursor、搜索模型、实时对话、查看轨迹和 Token 用量" width="100%"></a>
 
-[观看 1080p 视频](docs/promo.mp4)
-
 ## 安装
 
 打开 **插件 → 添加插件**，输入 `github:cocofhu/dsh-aio-agent`，点击 **安装**，再点 **立即启用**。也可以在终端执行：
@@ -68,3 +66,7 @@ npm pack               # 打出 tarball，在「添加插件」中安装做本�
 ```
 
 品牌图标来自 [lobe-icons](https://github.com/lobehub/lobe-icons)（MIT），详见 `assets/provider-logos/README.md`。
+
+## 许可证
+
+[MIT](LICENSE)

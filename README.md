@@ -6,8 +6,6 @@ Run sessions in Cursor, Claude Code, Codex, OpenCode, CodeBuddy or Kimi Code fro
 
 <a href="docs/promo.mp4"><img src="docs/promo.webp" alt="Switching to Cursor in the DSH mode menu, searching its models, a live turn, the trajectory and token usage" width="100%"></a>
 
-[Watch in 1080p](docs/promo.mp4)
-
 ## Install
 
 Open **Plugins → Add plugin**, enter `github:cocofhu/dsh-aio-agent`, choose **Install**, then **Enable now**. From a terminal, the same install is:
@@ -68,3 +66,7 @@ npm pack               # tarball to install through Add plugin for a local trial
 ```
 
 Provider logos come from [lobe-icons](https://github.com/lobehub/lobe-icons) (MIT); see `assets/provider-logos/README.md`.
+
+## License
+
+[MIT](LICENSE)
