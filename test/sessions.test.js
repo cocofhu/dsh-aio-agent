@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { handleResume } from '../lib/driver.js'
-import { bindingProjection, serveSessions } from '../lib/index.js'
+import { bindingProjection, buildDiagnosticTrace, serveSessions, serveTrace } from '../lib/index.js'
 import { cursorWorkspaceHash, escapeProjectDir, foldClaudeTranscript, foldCodebuddyTranscript, isSessionId, listBackendSessions, parseCodexIndex, parseOpenCodeList, readBinding } from '../lib/sessions.js'
 
 test('project directories and the Cursor workspace hash follow each CLI', () => {
@@ -257,6 +257,32 @@ test('the sessions route lists the preset backend and reports the active id', as
     const listed = await serveSessions(host, { url: 'http://localhost/api/aio-agent/sessions?sessionId=s1' })
     assert.equal(listed.status, 200)
     assert.deepEqual(await listed.json(), { sessions: [], activeId: null })
+    const traceSession = {
+      header: { cwd },
+      snapshotEvents: () => [
+        { seq: 1, type: 'model/selection', data: { provider: 'aio-codex', model: 'gpt-6.1-sol', reasoningEffort: 'low' } },
+        { seq: 2, type: 'plugin:dsh-aio-agent/stream', data: { type: 'error', message: 'model_not_found', apiKey: 'secret-value' } },
+        { seq: 3, type: 'plugin:dsh-aio-agent/trace', data: { backend: 'codex', argv: ['codex', 'exec', '--json'], exitCode: 1, stderr: 'codex version too old', error: "The 'gpt-6.1-sol' model is not supported" } },
+      ],
+    }
+    const built = await buildDiagnosticTrace(traceSession, {
+      preset: 'aio-codex',
+      message: "The 'gpt-6.1-sol' model is not supported",
+      cliVersionLookup: async () => 'codex-cli 0.1.0',
+    })
+    assert.match(built.trace, /CLI Version\*\*: `codex-cli 0\.1\.0`/)
+    assert.match(built.trace, /gpt-6\.1-sol/)
+    assert.match(built.trace, /codex version too old/)
+    assert.doesNotMatch(built.trace, /secret-value/)
+    assert.match(built.issueUrl, /^https:\/\/github\.com\/cocofhu\/dsh-aio-agent\/issues\/new\?/)
+    const traceResp = await serveTrace({
+      sessions: { get: (id) => (id === 's1' ? traceSession : undefined) },
+      sessionProjections: { stateOf: () => 'aio-codex' },
+    }, { url: 'http://localhost/api/aio-agent/trace?sessionId=s1&message=boom' })
+    assert.equal(traceResp.status, 200)
+    const traceJson = await traceResp.json()
+    assert.match(traceJson.trace, /Diagnostic Trace/)
+    assert.match(traceJson.issueUrl, /issues\/new/)
   } finally {
     await rm(home, { recursive: true, force: true })
   }

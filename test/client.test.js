@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 globalThis.window = { __ModuleLoader__: { load: (definition) => { globalThis.loaded = definition } } }
 await import('../lib/client.js')
-const { labelCss, modeView, presetCss, compactModels, setupText, hostText, resumeChoices, parseResumeText } = globalThis.loaded.factory(() => ({}))
+const { labelCss, modeView, presetCss, compactModels, setupText, hostText, resumeChoices, parseResumeText, errorActionCopy } = globalThis.loaded.factory(() => ({}))
 const css = labelCss()
 const rules = css.split('\n').map((rule) => ({ selectors: rule.slice(0, rule.indexOf('{')).split(','), body: rule.slice(rule.indexOf('{')) }))
 
@@ -251,4 +251,6 @@ test('resume rows group the current workspace first and mark the bound session',
   assert.deepEqual(parseResumeText('Resuming session kimi123.'), { title: '', id: 'kimi123' })
   assert.deepEqual(parseResumeText('Cleared resumed session (abc).'), { title: '', id: 'abc', cleared: true })
   assert.equal(parseResumeText('Pick a session from /resume, or pass a session id.'), null)
+  assert.deepEqual(errorActionCopy(true), { copy: '复制 Trace', copied: '已复制 Trace', issue: '提交 Issue' })
+  assert.deepEqual(errorActionCopy(false), { copy: 'Copy Trace', copied: 'Trace copied', issue: 'Report Issue' })
 })
