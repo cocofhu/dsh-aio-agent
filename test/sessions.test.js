@@ -200,6 +200,8 @@ test('the binding projection keeps a title when a later turn records the same id
   state = projection.apply(state, { type: 'plugin:dsh-aio-agent/binding', data: { backend: 'claude-code', cwd: '/work', chatId: 'abc' } })
   assert.equal(state.title, 'Chosen title')
   assert.equal(state.resumed, true)
+  state = projection.apply(state, { type: 'user/message', data: {} })
+  assert.equal(state.resumed, false)
   state = projection.apply(state, { type: 'plugin:dsh-aio-agent/binding', data: { backend: 'kimi-code', acpSessionId: 'kimi123' } })
   assert.deepEqual(state, { backend: 'kimi-code', id: 'kimi123', title: null, resumed: false })
   state = projection.apply(state, { type: 'plugin:dsh-aio-agent/binding', data: { backend: 'kimi-code', cleared: true } })
