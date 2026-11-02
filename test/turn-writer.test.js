@@ -76,6 +76,15 @@ test('edits without ACP diff content fall back to rawInput (OpenCode and Claude 
   assert.deepEqual(edit.result.meta.diffs, [{ path: '/work/a.js', oldText: 'a', newText: 'b' }])
 })
 
+test('a skill tool maps to the native skill card', () => {
+  const { call, args } = runTool({ kind: 'skill', title: 'Skill', rawInput: { skill: 'review' } })
+  assert.equal(call.name, 'skill')
+  assert.deepEqual(args, { name: 'review' })
+  const slash = runTool({ kind: 'skill', title: 'SlashCommand', rawInput: { command: '/ship' } })
+  assert.equal(slash.call.name, 'skill')
+  assert.equal(slash.args.name, 'ship')
+})
+
 test('kinds without a native tool keep an aio_ name', () => {
   const { call, args } = runTool({ kind: 'search', title: 'Search TODO', rawInput: { pattern: 'TODO' } })
   assert.equal(call.name, 'aio_search')

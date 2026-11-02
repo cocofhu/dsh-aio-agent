@@ -62,3 +62,12 @@ test('a failed tool and a run error are reported', () => {
   assert.equal(stream.result, undefined)
   assert.equal(stream.failure(), 'invalid api key')
 })
+
+test('a skill tool keeps the skill kind', () => {
+  const { updates } = replay([
+    { type: 'tool_use', sessionID: 's', part: { tool: 'skill', callID: 'c-skill', state: { status: 'completed', input: { name: 'review' }, output: 'loaded' } } },
+  ])
+  const [call] = ofType(updates, 'tool_call')
+  assert.equal(call.kind, 'skill')
+  assert.deepEqual(call.rawInput, { name: 'review' })
+})
