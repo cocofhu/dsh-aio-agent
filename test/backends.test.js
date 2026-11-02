@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { currentBackend, effortName, parseCodexCache, parseCommand, parseHelpModels, parseModelList, parseOpenCodeModels, provideLaunch, resolveBackend } from '../lib/backends.js'
+import { currentBackend, effortName, parseCodexCache, parseCommand, parseHelpModels, parseModelList, parseOpenCodeModels, printForce, provideLaunch, resolveBackend } from '../lib/backends.js'
 
 globalThis.window = { __ModuleLoader__: { load: (definition) => { globalThis.loaded = definition } } }
 await import('../lib/client.js')
@@ -67,6 +67,15 @@ test('Cursor runs each turn in print mode, approving tools and MCP servers when 
   const custom = resolveBackend('cursor', { command: '"/opt/Cursor Agent/cursor-agent" --endpoint x acp', model: 'gpt-5.5-high' })
   assert.equal(custom.defaultModel, 'gpt-5.5-high')
   assert.deepEqual(custom.printArgv({}).slice(0, 4), ['/opt/Cursor Agent/cursor-agent', '--endpoint', 'x', '--print'])
+})
+
+test('root cannot ask Claude Code or CodeBuddy to bypass permissions', () => {
+  assert.equal(printForce({ id: 'claude-code', permission: 'allow' }, 0), false)
+  assert.equal(printForce({ id: 'codebuddy', permission: 'allow' }, 0), false)
+  assert.equal(printForce({ id: 'claude-code', permission: 'allow' }, 1000), true)
+  assert.equal(printForce({ id: 'cursor', permission: 'allow' }, 0), true)
+  assert.equal(printForce({ id: 'opencode', permission: 'allow' }, 0), true)
+  assert.equal(printForce({ id: 'claude-code', permission: 'deny' }, 1000), false)
 })
 
 test('Claude Code reads a stream-json user message and keeps its own model by default', () => {

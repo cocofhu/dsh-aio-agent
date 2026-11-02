@@ -37,6 +37,10 @@ An agent that is not installed or not signed in stays out of the model selector 
 
 The CLI keeps its own conversation context: each turn resumes the CLI session the first turn started, also after a DSH restart.
 
+Type `/` to run a skill from this workspace or your home directory. Skills are read from `.dsh/skills`, `.agents/skills`, `.claude/skills`, `.claude/commands`, `.cursor/skills`, `.codex/skills`, `.opencode/skills`, `.codebuddy/skills` and `.kimi/skills` (project, then the same directories under your home directory). Choosing `/skill-name` highlights the chip and opens its `SKILL.md` in the sidebar. Sending it includes the skill instructions in the prompt the CLI receives, including for an agent that does not scan that directory itself. A skill the CLI loads with its own Skill tool shows as the native expandable skill card.
+
+`/resume` continues a CLI session that already exists on this machine. The popup lists the current workspace first, then other workspaces, with the title, time and a short id. `/resume <session-id>` binds that id directly. Later turns pass it to the CLI (`--resume`, `codex exec resume`, `opencode run --session`, or ACP `session/load` for Kimi Code). DSH keeps its own transcript; it does not copy the CLI's history. After a resume, the transcript shows a resume card, a bar above the composer stays visible with that session's title, and the sidebar title changes to it.
+
 ## Configure
 
 **Plugins → AIO Agent** lists one switchable component per agent; switching one off removes its mode and its models. **Configure** opens the agent's page:

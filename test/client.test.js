@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 globalThis.window = { __ModuleLoader__: { load: (definition) => { globalThis.loaded = definition } } }
 await import('../lib/client.js')
-const { labelCss, modeView, presetCss, compactModels, setupText, hostText } = globalThis.loaded.factory(() => ({}))
+const { labelCss, modeView, presetCss, compactModels, setupText, hostText, resumeChoices, parseResumeText } = globalThis.loaded.factory(() => ({}))
 const css = labelCss()
 const rules = css.split('\n').map((rule) => ({ selectors: rule.slice(0, rule.indexOf('{')).split(','), body: rule.slice(rule.indexOf('{')) }))
 
@@ -225,4 +225,30 @@ test('host preset descriptions and turn errors read in Chinese and keep English 
   assert.equal(mismatch.agent, undefined)
   assert.match(hostText('OpenCode models run only in the OpenCode agent preset; choose it from the mode menu or pick another model', true).text, /^OpenCode 的模型只能在 OpenCode 模式下使用/)
   assert.equal(hostText('something else', true), undefined)
+})
+
+test('resume rows group the current workspace first and mark the bound session', () => {
+  const rows = resumeChoices([
+    { id: 'other-session', title: 'Elsewhere', updatedAt: Date.parse('2026-01-02T00:00:00Z'), currentWorkspace: false },
+    { id: 'current-session', title: 'Here', updatedAt: Date.parse('2026-01-03T00:00:00Z'), currentWorkspace: true },
+  ], 'current-session', false)
+  assert.equal(rows[1].group.label, 'Current workspace')
+  assert.equal(rows[1].active, true)
+  assert.equal(rows[1].badge, 'Continuing')
+  assert.match(rows[1].detail, /^Continuing ·/)
+  assert.equal(rows[0].group.label, 'Other workspaces')
+  assert.equal(rows[0].active, undefined)
+  assert.equal(rows[0].badge, undefined)
+  assert.match(rows[1].detail, /current-/)
+  const zh = resumeChoices([{ id: 'current-session', title: '这里', currentWorkspace: true }], 'current-session', true)
+  assert.equal(zh[0].group.label, '当前工作区')
+  assert.equal(zh[0].badge, '续接中')
+  assert.match(zh[0].detail, /^正在续接 ·/)
+  assert.deepEqual(parseResumeText('Resuming "Chosen title" (11111111-1111-1111-1111-111111111111).'), {
+    title: 'Chosen title',
+    id: '11111111-1111-1111-1111-111111111111',
+  })
+  assert.deepEqual(parseResumeText('Resuming session kimi123.'), { title: '', id: 'kimi123' })
+  assert.deepEqual(parseResumeText('Cleared resumed session (abc).'), { title: '', id: 'abc', cleared: true })
+  assert.equal(parseResumeText('Pick a session from /resume, or pass a session id.'), null)
 })

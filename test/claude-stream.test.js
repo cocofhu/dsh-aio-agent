@@ -69,6 +69,17 @@ test('the result reports the session id and usage without counting cache reads a
   assert.equal(stream.recordable(transcript.at(-1)), true)
 })
 
+test('Skill and SlashCommand calls are skill cards', () => {
+  const { updates } = replay([
+    { type: 'assistant', message: { id: 'm1', content: [{ type: 'tool_use', id: 't1', name: 'Skill', input: { skill: 'review' } }] } },
+    { type: 'assistant', message: { id: 'm2', content: [{ type: 'tool_use', id: 't2', name: 'SlashCommand', input: { command: '/ship' } }] } },
+  ])
+  assert.deepEqual(ofType(updates, 'tool_call').map((call) => [call.kind, call.rawInput.skill ?? call.rawInput.command]), [
+    ['skill', 'review'],
+    ['skill', '/ship'],
+  ])
+})
+
 test('an error result names its errors', () => {
   const { stream } = replay([{ type: 'result', subtype: 'error_during_execution', is_error: true, errors: ['Authentication required. Please use /login'] }])
   assert.equal(stream.failure(), 'Authentication required. Please use /login')
