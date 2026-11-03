@@ -53,3 +53,39 @@ for (const mode of ['remote-close', 'stream-error', 'remote-close-ignore-term'])
     assert.equal(host.status, 0, host.stderr || String(host.error))
   })
 }
+
+test('ordinary close lets a healthy agent finish saving after SIGTERM', { skip: process.platform === 'win32' ? 'Windows SIGTERM forcibly terminates the child' : false }, () => {
+  const script = `
+    import assert from 'node:assert/strict'
+    import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+    import { tmpdir } from 'node:os'
+    import { join } from 'node:path'
+    import { AcpClient } from ${JSON.stringify(new URL('../lib/acp-client.js', import.meta.url).href)}
+    const dir = mkdtempSync(join(tmpdir(), 'aio-graceful-close-'))
+    const savedPath = join(dir, 'state.txt')
+    const agent = "import { writeFileSync } from 'node:fs'; "
+      + "process.on('SIGTERM', () => setTimeout(() => { writeFileSync(process.env.ACP_SAVE_PATH, 'saved'); process.exit(0) }, 600)); "
+      + "setTimeout(() => process.exit(3), 8000); console.log(JSON.stringify({method:'ready'}))"
+    let ready
+    const started = new Promise(resolve => { ready = resolve })
+    const client = new AcpClient({ argv: [process.execPath, '--input-type=module', '-e', agent],
+      env: { ...process.env, ACP_SAVE_PATH: savedPath },
+      onFrame(dir, msg) { if (dir === 'in' && msg.method === 'ready') ready() } })
+    const stopped = new Promise(resolve => client.child.once('exit', (code, signal) => resolve({ code, signal })))
+    const deadline = setTimeout(() => { client.child.kill('SIGKILL'); process.exit(2) }, 5000)
+    try {
+      await started
+      client.close()
+      const exit = await stopped
+      assert.equal(exit.code, 0)
+      assert.equal(exit.signal, null)
+      assert.equal(readFileSync(savedPath, 'utf8'), 'saved')
+    } finally {
+      clearTimeout(deadline)
+      client.child.kill('SIGKILL')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  `
+  const host = spawnSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', timeout: 10000 })
+  assert.equal(host.status, 0, host.stderr || String(host.error))
+})
