@@ -13,20 +13,24 @@ test('an ACP error keeps the cause the agent put in data.message', () => {
   assert.equal(acpErrorMessage({}), 'ACP error')
 })
 
-for (const mode of ['remote-close', 'stream-error']) {
-  test(`a broken agent input (${mode}) rejects pending requests without crashing the host`, { skip: mode === 'remote-close' && process.platform === 'win32' ? 'Closing fd 0 does not close the Windows pipe' : false }, () => {
+for (const mode of ['remote-close', 'stream-error', 'remote-close-ignore-term']) {
+  test(`a broken agent input (${mode}) rejects pending requests without crashing the host`, { skip: mode.startsWith('remote-close') && process.platform === 'win32' ? 'Closing fd 0 does not close the Windows pipe' : false }, () => {
     // Isolate the host so an unhandled pipe error is observed as a failed exit.
     const script = `
       import assert from 'node:assert/strict'
       import { AcpClient } from ${JSON.stringify(new URL('../lib/acp-client.js', import.meta.url).href)}
       const mode = ${JSON.stringify(mode)}
-      const agent = mode === 'remote-close' ? "import { closeSync } from 'node:fs'; closeSync(0); console.log(JSON.stringify({method:'ready'})); setInterval(() => {}, 1000)" : "console.log(JSON.stringify({method:'ready'})); setInterval(() => {}, 1000)"
+      // This deadline also runs if an unhandled error crashes the host.
+      const agent = "setTimeout(() => process.exit(0), 8000); "
+        + (mode === 'remote-close-ignore-term' ? "process.on('SIGTERM', () => {}); " : "")
+        + (mode.startsWith('remote-close') ? "import { closeSync } from 'node:fs'; closeSync(0); " : "")
+        + "console.log(JSON.stringify({method:'ready'})); setInterval(() => {}, 1000)"
       let ready
       const started = new Promise(resolve => { ready = resolve })
       const client = new AcpClient({ argv: [process.execPath, '--input-type=module', '-e', agent],
         onFrame(dir, msg) { if (dir === 'in' && msg.method === 'ready') ready() } })
-      const stopped = new Promise(resolve => client.child.once('exit', resolve))
-      const deadline = setTimeout(() => { client.child.kill(); process.exit(2) }, 5000)
+      const stopped = new Promise(resolve => client.child.once('exit', (code, signal) => resolve({ code, signal })))
+      const deadline = setTimeout(() => { client.child.kill('SIGKILL'); process.exit(2) }, 5000)
       try {
         await started
         const first = client.request('session/prompt', {text: 'x'.repeat(1024 * 1024)})
@@ -36,12 +40,13 @@ for (const mode of ['remote-close', 'stream-error']) {
         assert.deepEqual(results.map(result => result.status), ['rejected', 'rejected'])
         assert.ok(results.every(result => result.reason.code === 'EPIPE'))
         assert.equal(client.pending.size, 0)
-        await stopped
+        const exit = await stopped
+        if (mode === 'remote-close-ignore-term') assert.equal(exit.signal, 'SIGKILL')
         await assert.rejects(client.request('session/new', {}), /not running/)
       } finally {
         clearTimeout(deadline)
         client.close()
-        client.child.kill()
+        client.child.kill('SIGKILL')
       }
     `
     const host = spawnSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', timeout: 10000 })
