@@ -33,7 +33,7 @@ dsh plugin add github:cocofhu/dsh-aio-agent
 
 1. 新建会话时，在模式菜单中选择 **Cursor**、**Claude Code**、**Codex**、**OpenCode**、**CodeBuddy** 或 **Kimi Code**。
 2. 在模型菜单中选择该 Agent 的模型，或保留默认值。Agent 提供推理等级时（Codex、OpenCode 的 variant、Kimi Code 的思考开关），在 **推理等级** 中选择；Codex 列出的模型和等级与它自己的选择器一致（`~/.codex/models_cache.json`）。
-3. 照常发送消息，回复会随 Agent 输出实时显示。停止、排队和对话记录与普通会话一致；工具调用显示为原生的终端、读取、写入和编辑步骤。
+3. 照常发送消息，回复会随 Agent 输出实时显示。排队消息在当前轮结束后依次运行；点击队列行的发送会中断当前 CLI 调用，并续接同一 CLI 会话处理这条消息。停止会取消当前调用及其工具进程，保留尚未发送的队列，直到再次发送消息。工具调用显示为原生的终端、读取、写入和编辑步骤。
 
 对话上下文保存在 CLI 一侧：之后每一轮都续接第一轮建立的 CLI 会话，DSH 重启后也一样。
 
@@ -69,6 +69,14 @@ npm test               # node --test
 npm run build:logos    # 把 assets/provider-logos 重新内联进 lib/client.js
 npm pack               # 打出 tarball，在「添加插件」中安装做本地试用
 ```
+
+测试使用 `PATH` 中的 DSH 安装（或 `DSH_ROOT`），通过受控 CLI 覆盖六种后端的真实 Agent 循环。安装 OpenCode、CodeBuddy 并设置 `DEEPSEEK_API_KEY` 后，可以显式运行排队、队列发送和停止的实测：
+
+```sh
+DSH_AIO_LIVE_TESTS=1 node --import ./test/dsh-runtime.mjs --test test/live-driver.test.js
+```
+
+实测使用临时工作区和 CLI 配置，会产生 DeepSeek API 调用费用。
 
 品牌图标来自 [lobe-icons](https://github.com/lobehub/lobe-icons)（MIT），详见 `assets/provider-logos/README.md`。
 
