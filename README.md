@@ -33,7 +33,7 @@ An agent that is not installed or not signed in stays out of the model selector 
 
 1. Pick **Cursor**, **Claude Code**, **Codex**, **OpenCode**, **CodeBuddy** or **Kimi Code** from the mode menu of a new session.
 2. Choose one of that agent's models in the model selector, or keep its default. Where the agent offers reasoning levels (Codex, OpenCode variants, Kimi Code thinking), pick one under **Reasoning effort**; Codex lists the models and levels of its own picker (`~/.codex/models_cache.json`).
-3. Send messages as usual. Replies stream in as the agent writes them. Stop, queueing and the transcript work as in any session; tool calls show up as native shell, read, write and edit steps.
+3. Send messages as usual. Replies stream in as the agent writes them. Queued messages run in order after the current turn. Send on a queue row interrupts the current CLI call and resumes the same CLI session with that message. Stop cancels the active call and its tool processes, keeping pending input queued until you send again. Tool calls show up as native shell, read, write and edit steps.
 
 The CLI keeps its own conversation context: each turn resumes the CLI session the first turn started, also after a DSH restart.
 
@@ -69,6 +69,14 @@ npm test               # node --test
 npm run build:logos    # re-inline assets/provider-logos into lib/client.js
 npm pack               # tarball to install through Add plugin for a local trial
 ```
+
+Tests use the DSH installation on `PATH` (or `DSH_ROOT`) and exercise its real agent loop with controlled CLIs for all six backends. With OpenCode and CodeBuddy installed and `DEEPSEEK_API_KEY` set, opt in to live tests for queued turns, queue Send and Stop:
+
+```sh
+DSH_AIO_LIVE_TESTS=1 node --import ./test/dsh-runtime.mjs --test test/live-driver.test.js
+```
+
+The live tests use temporary workspaces and CLI configuration; they make billed DeepSeek API calls.
 
 Provider logos come from [lobe-icons](https://github.com/lobehub/lobe-icons) (MIT); see `assets/provider-logos/README.md`.
 
