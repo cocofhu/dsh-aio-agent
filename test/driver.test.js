@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { mkdtemp, readFile, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -166,6 +167,22 @@ test('steered images survive the handoff and temporary files are removed after t
   await assert.rejects(stat(path), { code: 'ENOENT' })
   assert.deepEqual(events().find((event) => event.type === 'user/message' && event.data.id === steering.id).data.content, steering.content)
   assert.ok(readBinding(agent.session)?.chatId)
+})
+
+test('stored image attachments reach the CLI as temporary files it can open', { timeout: 10000 }, async (t) => {
+  const { agent, calls, events, storedImage } = await harness(t, 'codex')
+  const bytes = Buffer.from('stored image bytes')
+  const image = storedImage(bytes)
+  const message = userMessage('look', [image])
+  agent.followup(message)
+  await agent.whenIdle()
+  const call = (await calls())[0]
+  const path = /\[Attached image: (.*?)\]/.exec(call.prompt)?.[1]
+  assert.ok(path, 'the prompt names a temporary image file')
+  assert.deepEqual(call.images, [{ file: path, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') }])
+  assert.ok(call.args.indexOf('-i') > 0, 'codex receives the image on its native channel')
+  assert.deepEqual(events().find((event) => event.type === 'user/message' && event.data.id === message.id).data.content[1], image)
+  await assert.rejects(stat(path), { code: 'ENOENT' })
 })
 
 test('a user stop after steering keeps both steering and ordinary input parked', { timeout: 10000 }, async (t) => {

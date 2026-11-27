@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
-import { appendFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { createInterface } from 'node:readline'
 
 const args = process.argv.slice(2)
@@ -8,6 +9,20 @@ const dialect = flag('--mock-dialect')
 const mode = flag('--mock-mode')
 const log = (entry) => appendFileSync('calls.jsonl', JSON.stringify({ pid: process.pid, ...entry }) + '\n')
 const emit = (entry) => console.log(JSON.stringify(entry))
+/** Read every image the CLI was given, proving the payload reached this process before it starts. */
+function attachedImages(argv) {
+  const images = []
+  for (let i = 0; i < argv.length - 1; i++) {
+    if (argv[i] !== '-i' && argv[i] !== '--image') continue
+    try {
+      const data = readFileSync(argv[i + 1])
+      images.push({ file: argv[i + 1], bytes: data.length, sha256: createHash('sha256').update(data).digest('hex') })
+    } catch (error) {
+      images.push({ file: argv[i + 1], error: error?.code ?? String(error) })
+    }
+  }
+  return images
+}
 const resumeAt = args.indexOf('--resume') >= 0 ? args.indexOf('--resume') : args.indexOf('--session') >= 0 ? args.indexOf('--session') : args.indexOf('resume')
 const resume = resumeAt >= 0 ? args[resumeAt + 1] : undefined
 const sessionId = resume ?? '11111111-1111-1111-1111-111111111111'
@@ -60,7 +75,7 @@ if (dialect === 'acp') {
   process.stdin.setEncoding('utf8').on('data', (chunk) => { input += chunk })
   process.stdin.on('end', () => {
     const prompt = dialect === 'claude' ? JSON.parse(input).message.content.filter((part) => part.type === 'text').map((part) => part.text).join('\n') : dialect === 'cursor' ? input : args.at(-1)
-    log({ prompt, resume, args })
+    log({ prompt, resume, args, images: attachedImages(args) })
     if (dialect === 'codex') emit({ type: 'thread.started', thread_id: sessionId })
     else if (dialect === 'open-code') emit({ type: 'step_start', sessionID: sessionId })
     else emit({ type: 'system', session_id: sessionId })

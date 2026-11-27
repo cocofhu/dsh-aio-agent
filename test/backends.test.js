@@ -103,6 +103,10 @@ test('Codex runs `codex exec --json`, resuming its thread and passing the effort
     '-c', 'model_reasoning_effort=high', '--dangerously-bypass-approvals-and-sandbox', '--', '-x hi',
   ])
   assert.deepEqual(codex.printArgv({ prompt: 'hi' }), ['codex', 'exec', '--json', '--skip-git-repo-check', '--', 'hi'])
+  assert.deepEqual(codex.printArgv({ model: 'gpt-6-sol', prompt: 'hi', images: ['/tmp/a.png', '/tmp/b.png'] }), [
+    'codex', 'exec', '--json', '--skip-git-repo-check', '--model', 'gpt-6-sol',
+    '-i', '/tmp/a.png', '-i', '/tmp/b.png', '--', 'hi',
+  ])
   const env = codex.printEnv({ PATH: '/bin', OPENAI_API_KEY: 'k', CODEX_API_KEY: 'k', ACP_CODEX_API_KEY: 'k' })
   assert.deepEqual(env, { PATH: '/bin' })
 })
