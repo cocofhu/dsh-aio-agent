@@ -18,6 +18,17 @@ export async function agentRuntime(t, { backend = 'cursor', cwd, skills, setup }
   ctx.provide('tools', {})
   ctx.provide('skills', skills ?? {})
   ctx.provide('commands', {})
+  // Prompt image parts reach a driver as durable references: the Harness stores
+  // every uploaded image and admits the reference, never the inline bytes.
+  const storedImages = new Map()
+  let storedImageCount = 0
+  ctx.provide('attachments', {
+    async readImage(ref) {
+      const data = storedImages.get(ref?.attachmentId)
+      if (data === undefined) throw new Error(`attachment not found: ${ref?.attachmentId}`)
+      return { ref, data: new Uint8Array(data) }
+    },
+  })
   ctx.plugin(SessionStore)
   ctx.plugin(AgentRegistry)
   ctx.plugin(SessionProjectionRegistry)
@@ -36,8 +47,15 @@ export async function agentRuntime(t, { backend = 'cursor', cwd, skills, setup }
     },
   })
   const { agent } = handle
+  /** Stage image bytes the way an upload does, and return the prompt part a Session holds. */
+  const storedImage = (bytes, mediaType = 'image/png') => {
+    const data = Buffer.from(bytes)
+    const attachmentId = `stored-${++storedImageCount}`
+    storedImages.set(attachmentId, data)
+    return { type: 'image', attachment: { attachmentId, mediaType, bytes: data.byteLength, width: 1, height: 1 } }
+  }
   return {
-    ctx, agent, errors, frames,
+    ctx, agent, errors, frames, storedImage,
     events: () => agent.session.snapshotEvents(),
     dispose: () => handle.dispose(),
     // Same transfer as the Harness queue row's Send action, using its public API.
